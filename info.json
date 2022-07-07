@@ -1,0 +1,12 @@
+{
+  "commit": {
+    "commit": "fcd26e20a22bf1d2d233ede6e199771026d83b1a",
+    "author": "peterdesmet <peter.desmet@inbo.be>",
+    "time": "2022-07-07 16:46:37",
+    "files": 3,
+    "merge": false,
+    "message": "usethis::use_github_action_check_standard()\n"
+  },
+  "repo": "https://github.com/frictionlessdata/frictionless-r",
+  "pkg": "frictionless"
+}
