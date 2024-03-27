@@ -1,0 +1,12 @@
+{
+  "commit": {
+    "commit": "d4cbe02ab4a9df1aebbe6137c8ac30955b9a40c6",
+    "author": "Peter Desmet <peter.desmet@inbo.be>",
+    "time": "2024-03-27 16:10:04",
+    "files": 2,
+    "merge": true,
+    "message": "Merge pull request #200 from frictionlessdata/explain_validation\n\nDescribe limited validation functionality"
+  },
+  "repo": "https://github.com/frictionlessdata/frictionless-r",
+  "pkg": "frictionless"
+}
