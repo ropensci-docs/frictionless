@@ -1,0 +1,13 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  data-package: data-package.html
+  data-resource: data-resource.html
+  frictionless: frictionless.html
+  table-dialect: table-dialect.html
+  table-schema: table-schema.html
+last_built: 2026-08-31T21:00Z
+urls:
+  reference: https://docs.ropensci.org/frictionless/reference
+  article: https://docs.ropensci.org/frictionless/articles

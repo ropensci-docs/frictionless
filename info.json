@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "commit": "06def88e74189ea893b5af07ea958e934a97868f",
+    "author": "Peter Desmet <peter.desmet@inbo.be>",
+    "time": "2026-08-31T18:10:00Z",
+    "files": 12,
+    "merge": true,
+    "message": "Merge pull request #374 from frictionlessdata/version-tests\n\nDon't silently upgrade + complete version tests"
+  },
+  "repo": "https://github.com/frictionlessdata/frictionless-r",
+  "pkg": "frictionless",
+  "time": "2026-08-31T21:00:48Z"
+}

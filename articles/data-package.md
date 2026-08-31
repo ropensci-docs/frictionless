@@ -1,0 +1,287 @@
+# Data Package
+
+[Data Package](https://datapackage.org/standard/data-package/) is a
+simple container format to describe a coherent collection of data (a
+dataset), including its contributors, licenses, etc.
+
+In this document we use the terms “package” for Data Package, “resource”
+for Data Resource, “dialect” for Table Dialect, and “schema” for Table
+Schema.
+
+## General implementation
+
+frictionless supports reading, manipulating and writing packages. Much
+of its functionality is focused on manipulating resources (see
+[`vignette("data-resource")`](https://docs.ropensci.org/frictionless/articles/data-resource.md)).
+
+### Read
+
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+reads a package from `datapackage.json` file (path or URL):
+
+``` r
+
+library(frictionless)
+file <- system.file("extdata", "v2", "datapackage.json", package = "frictionless")
+package <- read_package(file)
+```
+
+[`print.datapackage()`](https://docs.ropensci.org/frictionless/reference/print.datapackage.md)
+prints a human-readable summary of a package:
+
+``` r
+
+package
+#> A Data Package (version 2.0) with 3 resources:
+#> • deployments
+#> • observations
+#> • media
+#> Use `unclass()` to print the Data Package as a list.
+```
+
+### Manipulate
+
+A package is a list, with all the properties that were present in the
+`datapackage.json` file (e.g. `name`, `id`, etc.). frictionless adds the
+custom attribute `"directory"` to support reading data (which is removed
+when writing to disk) and extends the class with `"datapackage"` to
+support printing and checking:
+
+``` r
+
+attributes(package)
+#> $names
+#> [1] "$schema"   "name"      "id"        "licenses"  "version"   "created"  
+#> [7] "spatial"   "temporal"  "resources"
+#> 
+#> $directory
+#> [1] "/github/home/R/x86_64-pc-linux-gnu-library/4.6/frictionless/extdata/v2"
+#> 
+#> $class
+#> [1] "datapackage" "list"
+```
+
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md)
+creates a package from scratch or from an existing package. **It always
+creates a package following the [v2
+specification](https://datapackage.org/standard/data-package/).** It
+adds the required properties, attribute and class if those are missing:
+
+``` r
+
+# From scratch
+create_package()
+#> A Data Package (version 2.0) with 0 resources.
+#> Use `unclass()` to print the Data Package as a list.
+
+# From an existing package
+create_package(package)
+#> A Data Package (version 2.0) with 3 resources:
+#> • deployments
+#> • observations
+#> • media
+#> Use `unclass()` to print the Data Package as a list.
+```
+
+[`check_package()`](https://docs.ropensci.org/frictionless/reference/check_package.md)
+checks if a package contains the required properties and class:
+
+``` r
+
+invalid_package <- example_package()
+invalid_package$resources <- NULL
+check_package(invalid_package)
+#> Error in `check_package()`:
+#> ! `package` must be a Data Package object.
+#> ✖ `package` is missing a resources property or it is not a list.
+#> ℹ Create a valid Data Package object with `read_package()` or
+#>   `create_package()`.
+```
+
+You can manipulate the package list, but frictionless does not provide
+functions to do that. Use [purrr](https://purrr.tidyverse.org/) or base
+R instead (see
+[`vignette("frictionless")`](https://docs.ropensci.org/frictionless/articles/frictionless.md)).
+
+Some functions (e.g. [`unclass()`](https://rdrr.io/r/base/class.html) or
+[`append()`](https://rdrr.io/r/base/append.html)) remove the custom
+class, creating an invalid package. You can fix this by calling
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md)
+on your package.
+
+Most functions have `package` as their first argument and return
+package. This allows you to **pipe the functions**:
+
+``` r
+
+library(dplyr) # Or library(magrittr)
+my_package <-
+  create_package() |>
+  add_resource(resource_name = "iris", data = iris) |>
+  append(c("title" = "my_package"), after = 0) |>
+  create_package() # To add the datapackage class again
+my_package
+#> A Data Package (version 2.0) with 1 resource:
+#> • iris
+#> Use `unclass()` to print the Data Package as a list.
+```
+
+### Write
+
+[`write_package()`](https://docs.ropensci.org/frictionless/reference/write_package.md)
+writes a package and its related resources to disk as a
+`datapackage.json` and CSV files. See the function documentation for
+details.
+
+## Properties implementation
+
+### \$schema
+
+[`$schema`](https://datapackage.org/standard/data-package/#dollar-schema)
+indicates what
+[`version()`](https://docs.ropensci.org/frictionless/reference/version.md)
+of the Data Package standard is used (v1 if undefined).
+
+- [`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+  ignores it and does not upgrade a package, since it does not rely on
+  v1 properties deprecated in v2.
+- [`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md)
+  sets `$schema` to the recommended v2 value
+  (`"https://datapackage.org/profiles/2.0/datapackage.json"`) and thus
+  creates a v2 package.
+- `upgrade_package()` sets `$schema` to the recommended v2 value, except
+  for certain `profile` values.
+
+### profile
+
+[`profile`](https://specs.frictionlessdata.io/data-package/#profile) (a
+deprecated v1 property) is ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+`upgrade_package()` removes `profile` (unless `$schema` is already set),
+but retains its value in `$schema` if it is a URL to a custom profile
+(for [backwards
+compatibility](https://datapackage.org/standard/data-package/#dollar-schema)).
+
+### resources
+
+[`resources`](https://datapackage.org/standard/data-package/#resources)
+is required. It is used by
+[`resource_names()`](https://docs.ropensci.org/frictionless/reference/resource_names.md)
+and many other functions.
+[`check_package()`](https://docs.ropensci.org/frictionless/reference/check_package.md)
+returns an error if it is missing.
+
+### name
+
+[`name`](https://datapackage.org/standard/data-package/#name) is ignored
+by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### id
+
+[`id`](https://datapackage.org/standard/data-package/#id) is ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+[`print.datapackage()`](https://docs.ropensci.org/frictionless/reference/print.datapackage.md)
+adds an extra sentence when `id` is a URL (like a DOI):
+
+``` r
+
+package <- example_package()
+package$id <- "https://doi.org/10.5281/zenodo.10053702/"
+package
+#> A Data Package (version 2.0) with 3 resources:
+#> • deployments
+#> • observations
+#> • media
+#> For more information, see <https://doi.org/10.5281/zenodo.10053702/>.
+#> Use `unclass()` to print the Data Package as a list.
+```
+
+### licenses
+
+[`licenses`](https://datapackage.org/standard/data-package/#licenses) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### title
+
+[`title`](https://datapackage.org/standard/data-package/#title) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### description
+
+[`description`](https://datapackage.org/standard/data-package/#description)
+is ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### homepage
+
+[`homepage`](https://datapackage.org/standard/data-package/#homepage) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### image
+
+[`image`](https://datapackage.org/standard/data-package/#image) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### version
+
+[`version`](https://datapackage.org/standard/data-package/#version) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### created
+
+[`created`](https://datapackage.org/standard/data-package/#created) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### keywords
+
+[`keywords`](https://datapackage.org/standard/data-package/#keywords) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+
+### contributors
+
+[`contributors`](https://datapackage.org/standard/data-package/#contributors)
+is ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
+`upgrade_package()` converts `"role": "value"` to `"roles": ["value"]`
+for all contributors (for [backwards
+compatibility](https://datapackage.org/overview/changelog/#packagecontributors-updated)).
+
+### sources
+
+[`sources`](https://datapackage.org/standard/data-package/#sources) is
+ignored by
+[`read_package()`](https://docs.ropensci.org/frictionless/reference/read_package.md)
+and not set by
+[`create_package()`](https://docs.ropensci.org/frictionless/reference/create_package.md).
