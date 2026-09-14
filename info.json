@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "commit": "c49bc260ed1ec480fc60dc6a1fad5163d0c9504d",
+    "author": "Peter Desmet <600993+peterdesmet@users.noreply.github.com>",
+    "time": "2026-09-14T08:39:08Z",
+    "files": 2,
+    "merge": false,
+    "message": "Revert \"Update version to version candidate\"\n\nThis reverts commit 3e5b0a01c9c88d5ace84892fa83fd6e494bedfa2.\n\n`2.0.0-rc.1` not valid for R\n"
+  },
+  "repo": "https://github.com/frictionlessdata/frictionless-r",
+  "pkg": "frictionless",
+  "time": "2026-09-14T13:35:54Z"
+}
