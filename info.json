@@ -1,0 +1,13 @@
+{
+  "commit": {
+    "commit": "7e49a358c4aaf293fc427480c7b199e58351371b",
+    "author": "Peter Desmet <600993+peterdesmet@users.noreply.github.com>",
+    "time": "2026-10-29T15:59:00Z",
+    "files": 2,
+    "merge": false,
+    "message": "Increment version number to 2.0.1.9000\n"
+  },
+  "repo": "https://github.com/frictionlessdata/frictionless-r",
+  "pkg": "frictionless",
+  "time": "2026-10-29T17:11:05Z"
+}
